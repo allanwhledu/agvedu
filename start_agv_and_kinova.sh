@@ -4,9 +4,11 @@ roslaunch  agv_tcp_velocity laser.launch&
 sleep 1
 roslaunch ira_laser_tools laserscan_multi_merger.launch&
 sleep 1
-rosrun map_server map_server /home/sjtuwhl/ROBOTLAB_WS/src/map.yaml&
+rosrun map_server map_server /home/sjtuwhl/ROBOTLAB_WS/src/agv_tcp_velocity/map/map.yaml&
 sleep 1
 roslaunch laser_scan_matcher demo.launch&
+
+roslaunch agv_tcp_velocity pure_matcher.launch
 sleep 1
 roslaunch amcl amcl_omni.launch&
 sleep 1

@@ -1,7 +1,7 @@
 global_costmap:
   global_frame: map
   robot_base_frame: base_link
-  update_frequency: 10 
+  update_frequency: 2
   static_map: true
 
   obstacle_layer: {

@@ -9,7 +9,7 @@
     <param name="use_alpha_beta" value="true"/>
     <param name="max_iterations" value="10"/>
   </node>
- <node name="map_server" pkg="map_server" type="map_server" args="/home/sjtuwhl/ROBOTLAB_WS/src/map.yaml"/>
+ <node name="map_server" pkg="map_server" type="map_server" args="/home/sjtuwhl/ROBOTLAB_WS/src/agv_tcp_velocity/map/map.yaml"/>
   <node pkg="amcl" type="amcl" name="amcl" output="screen" >
   <!-- Publish scans from best pose at a max of 10 Hz -->
   <param name="odom_model_type" value="diff"/>
