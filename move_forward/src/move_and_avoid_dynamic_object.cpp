@@ -19,10 +19,9 @@
 int switch_tar = 1;
 int first_loop = 1;
 
-void target_Callback(const std_msgs::Int32::ConstPtr& msg)
-{
+void target_Callback(const std_msgs::Int32::ConstPtr& msg){
     switch_tar = msg->data;
-    }
+}
 
 
 int main(int argc, char** argv)

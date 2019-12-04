@@ -161,12 +161,6 @@ catkin_package(
 add_dependencies(${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 ## Executables
-add_executable(hokuyo_node src/hokuyo_node.cpp)
-add_dependencies(hokuyo_node ${PROJECT_NAME}_gencfg)
-target_link_libraries(hokuyo_node
-  ${catkin_LIBRARIES}
-)
-
 add_library(gazebo_ros_utils src/gazebo_ros_utils.cpp)
 target_link_libraries(gazebo_ros_utils ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
@@ -313,7 +307,6 @@ add_library(gazebo_ros_template src/gazebo_ros_template.cpp)
 target_link_libraries(gazebo_ros_template ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 install(TARGETS
-  hokuyo_node
   vision_reconfigure
   camera_synchronizer
   gazebo_ros_utils
