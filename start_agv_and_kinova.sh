@@ -13,6 +13,8 @@ sleep 1
 roslaunch agv_tcp_velocity move_base.launch&
 sleep 5
 sudo chmod 777 /dev/ttyUSB0
+
+# sudo chmod a+rw /dev/ttyACM0
 sleep 2
 rosrun soccer_maxon soccer_maxon_node&
 sleep 1
