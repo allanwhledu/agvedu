@@ -10,17 +10,50 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <cmath>
+#include <std_msgs/Int32.h>
 #include "move_forward/agv_call.h"
+
+//先请求了movebase的服务
+//然后又请求了一次自定义的服务
+
+int switch_tar = 1;
+
+void target_Callback(const std_msgs::Int32::ConstPtr& msg)
+{
+    switch_tar = msg->data;
+    }
+
 
 int main(int argc, char** argv)
 {
 
     ros::init(argc, argv, "jrc_move2_initialpose");
     ros::NodeHandle node;
+
+    // pub
     ros::Publisher initial_pose_pub = node.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 100);
+
+    // sub
+    ros::Subscriber scan_sub = node.subscribe<std_msgs::Int32>("/scan",1,target_Callback);
+
+    // server
     ros::ServiceClient client = node.serviceClient<move_forward::agv_call>("kinova_action");
     ros::ServiceClient client_1 = node.serviceClient<move_forward::agv_call>("kinova_action1");
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac("move_base",true);
+    // ac是一个client
+
+    // 调用回调函数，获得初始的位姿和目标
+    int initial_time_counter = 0;
+
+    // 5次initial pose
+    while(initial_time_counter < 5)
+    {
+        ros::spinOnce();
+        ROS_INFO("the robot initial pose");
+        initial_time_counter = initial_time_counter + 1;
+        sleep(1);
+    }
+
     //read the parameter from config file
     double initial_pose_x, initial_pose_y, initial_pose_th;
     double target_pose_x, target_pose_y, target_pose_th;
@@ -29,9 +62,17 @@ int main(int argc, char** argv)
     ros::param::get("initial_pose_y", initial_pose_y);
     ros::param::get("initial_pose_th", initial_pose_th);
 
-    ros::param::get("target_pose_x", target_pose_x);
-    ros::param::get("target_pose_y", target_pose_y);
-    ros::param::get("target_pose_th", target_pose_th);
+    switch (switch_tar){
+        case 1:
+            ros::param::get("target_pose_x1", target_pose_x);
+            ros::param::get("target_pose_y1", target_pose_y);
+            ros::param::get("target_pose_th1", target_pose_th);
+        case 2:
+            ros::param::get("target_pose_x2", target_pose_x);
+            ros::param::get("target_pose_y2", target_pose_y);
+            ros::param::get("target_pose_th2", target_pose_th);
+    }
+    //todo 可以给出多个参数，然后订阅一下节点，依靠订阅消息来装入不同的参数吧
 
 //    std::cout<<initial_pose_x<<" "<<initial_pose_y<<" "<<initial_pose_th<<std::endl;
 //    std::cout<<target_pose_x<<" "<<target_pose_y<<" "<<target_pose_th<<std::endl;
@@ -51,9 +92,9 @@ int main(int argc, char** argv)
     initial_pose.pose.pose.orientation = tf::createQuaternionMsgFromYaw(initial_pose_th);
 
 
-    int initial_time_counter = 0;
+    initial_time_counter = 0;
 
-
+    // 5次initial pose
     while(initial_time_counter < 5)
     {
         ros::spinOnce();
@@ -65,6 +106,7 @@ int main(int argc, char** argv)
 
 
     //move  to target position
+    // 先连接一个move base是否可用
     ROS_INFO("move_base_square.cpp start...");
     //Wait 60 seconds for the action server to become available
     if(!ac.waitForServer(ros::Duration(60)))
@@ -72,7 +114,9 @@ int main(int argc, char** argv)
       ROS_INFO("Can't connected to move base server");
       return 1;
     }
+
     //Intialize the waypoint goal
+    // 将目标点装入
     move_base_msgs::MoveBaseGoal goal;
 
     //Use the map frame to define goal poses
@@ -86,6 +130,7 @@ int main(int argc, char** argv)
 
     //Start the robot moving toward the goal
     //Send the goal pose to the MoveBaseAction server
+    // 这里应该是在请求服务了
     ac.sendGoal(goal);
 
    //Allow 1 minute to get there
@@ -111,6 +156,7 @@ int main(int argc, char** argv)
    }
 
 
+   // 这里创建了一个自定义服务消息类
     move_forward::agv_call  srv;
     srv.request.action = 1;
     if(client.call(srv))
@@ -118,10 +164,7 @@ int main(int argc, char** argv)
         srv.request.action = 2;
         client_1.call(srv);
     }
-
-
-
-
+    // call只执行了一次,但是这个是和kinova有关的服务，我这里不需要改什么东西
 
 return 0;
 
