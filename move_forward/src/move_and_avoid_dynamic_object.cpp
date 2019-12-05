@@ -13,23 +13,20 @@
 #include <std_msgs/Int32.h>
 #include "move_forward/agv_call.h"
 
-//先请求了movebase的服务
-//然后又请求了一次自定义的服务
-
+// 按键控制信号
 int switch_tar = 0;
-int first_loop = 1;
-bool call_movebase = true;
 
+// 状态变量
+bool first_loop = true;
+bool call_movebase = true;
 bool goal_changed = false;
 
-void target_Callback(const std_msgs::Int32::ConstPtr& msg)
-{
+void target_Callback(const std_msgs::Int32::ConstPtr& msg){
     if(switch_tar != msg->data)
         goal_changed = true;
 
     switch_tar = msg->data;
-
-    }
+}
 
 
 int main(int argc, char** argv)
@@ -46,11 +43,9 @@ int main(int argc, char** argv)
 
     // server
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac("move_base",true);
-    // ac是一个client
 
-    // 调用回调函数，获得初始的位姿和目标
+
     int initial_time_counter = 0;
-
     //read the parameter from config file
     double initial_pose_x, initial_pose_y, initial_pose_th;
     double target_pose_x, target_pose_y, target_pose_th;
@@ -83,7 +78,6 @@ int main(int argc, char** argv)
                 ROS_INFO_STREAM("can not get switch_tar!");
                 call_movebase = false;
         }
-        //todo 可以给出多个参数，然后订阅一下节点，依靠订阅消息来装入不同的参数吧
 
         geometry_msgs::Pose  target_pose;
         target_pose.position.x = target_pose_x;
@@ -102,7 +96,7 @@ int main(int argc, char** argv)
 
         initial_time_counter = 0;
         // 首先5次initial pose
-        while(initial_time_counter < 5 && first_loop == 1)
+        while(initial_time_counter < 5 && first_loop == true)
         {
             ros::spinOnce();
             initial_pose_pub.publish(initial_pose);
@@ -112,7 +106,6 @@ int main(int argc, char** argv)
         }
 
 
-        //move  to target position
         // 先连接一个move base是否可用
         ROS_INFO("check move_base service ...");
         //Wait 10 seconds for the action server to become available
@@ -120,7 +113,8 @@ int main(int argc, char** argv)
         {
             ROS_INFO("Can't connected to move base server!");
 //            return 1;
-        }
+        } else
+            ROS_INFO_STREAM("connected to move_base server!");
 
         //Intialize the waypoint goal
         // 将目标点装入
@@ -137,12 +131,12 @@ int main(int argc, char** argv)
 
         //Start the robot moving toward the goal
         //Send the goal pose to the MoveBaseAction server
-        // 这里应该是在请求服务了
+        // 这里应该是在请求服务
 
-        ROS_INFO_STREAM(call_movebase<<' '<<goal_changed);
+        ROS_INFO_STREAM('state var: '<<call_movebase<<' '<<goal_changed);
         if(call_movebase == true  && goal_changed == true){
             ac.sendGoal(goal);
-            ROS_INFO_STREAM("sended goal!");
+            ROS_INFO_STREAM("sending goal!");
             goal_changed = false;
         } else
             ROS_INFO_STREAM("wait for switch_tar change");
@@ -169,7 +163,7 @@ int main(int argc, char** argv)
 //            }
 //        }
 
-        first_loop = 0;
+        first_loop = false;
         loop_rate.sleep();
     }
 

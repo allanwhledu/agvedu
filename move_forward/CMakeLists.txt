@@ -49,5 +49,8 @@ target_link_libraries(jrc_move2_initialpose ${catkin_LIBRARIES} )
 add_executable(move_and_avoid_dynamic_object src/move_and_avoid_dynamic_object.cpp)
 target_link_libraries(move_and_avoid_dynamic_object ${catkin_LIBRARIES} )
 
+add_executable(get_state_car src/get_state_car.cpp)
+target_link_libraries(get_state_car ${catkin_LIBRARIES} )
+
 
 

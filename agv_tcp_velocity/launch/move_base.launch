@@ -1,4 +1,14 @@
 <launch>
-  <param name="/use_sim_time" value="false"/>
-  <include file="$(find agv_tcp_velocity)/move_base_config/move_base_agv.xml"/>
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" clear_params="true">
+    <rosparam file="$(find agv_tcp_velocity)/move_base_config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find agv_tcp_velocity)/move_base_config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find agv_tcp_velocity)/move_base_config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find agv_tcp_velocity)/move_base_config/global_costmap_params.yaml" command="load" />
+
+    <rosparam command="load" file="$(find  agv_tcp_velocity)/move_base_config/dwa_local_planner_params.yaml"  />
+
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+
+  </node>
+
 </launch>
