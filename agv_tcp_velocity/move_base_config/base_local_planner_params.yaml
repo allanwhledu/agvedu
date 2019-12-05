@@ -10,7 +10,7 @@ TrajectoryPlannerROS:
 
   #Set the velocity limits of the robot
   max_vel_x: 0.6
-  min_vel_x: 0.05
+  min_vel_x: -0.1
   max_rotational_vel: 0.5
   min_in_place_rotational_vel: 0.1
 
