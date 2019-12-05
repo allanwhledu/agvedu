@@ -1,14 +1,18 @@
 <launch>
-	<param name="initial_pose_x" value="-4.402"/>
-	<param name="initial_pose_y" value="1.547"/>
-	<param name="initial_pose_th" value="-2.42"/>
+	<param name="initial_pose_x" value="-3.08575688229"/>
+	<param name="initial_pose_y" value="-1.94336716865"/>
+	<param name="initial_pose_th" value="0.093"/>
 
+
+	<param name="target_pose_x1" value="-3.08575688229"/>
+	<param name="target_pose_y1" value="-1.94336716865"/>
+	<param name="target_pose_th1" value="-0.093"/>
+
+	<param name="target_pose_x2" value="2"/>
+	<param name="target_pose_y2" value="-1.94336716865"/>
+	<param name="target_pose_th2" value="-0.093"/>
 	
-        <param name="target_pose_x" value="-5.389"/>
-	<param name="target_pose_y" value="0.757"/>
-	<param name="target_pose_th" value="-2.774"/>
-	
-        <node pkg="move_forward" name="move_and_avoid_dynamic_object" type="move_and_avoid_dynamic_object" output="screen">
+	<node pkg="move_forward" name="move_and_avoid_dynamic_object" type="move_and_avoid_dynamic_object" output="screen">
 	</node>	
 
 </launch>

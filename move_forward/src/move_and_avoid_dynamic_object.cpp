@@ -16,12 +16,19 @@
 //先请求了movebase的服务
 //然后又请求了一次自定义的服务
 
-int switch_tar = 1;
+int switch_tar = 0;
 int first_loop = 1;
+bool call_movebase = true;
+
+bool goal_changed = false;
 
 void target_Callback(const std_msgs::Int32::ConstPtr& msg)
 {
+    if(switch_tar != msg->data)
+        goal_changed = true;
+
     switch_tar = msg->data;
+
     }
 
 
@@ -35,7 +42,7 @@ int main(int argc, char** argv)
     ros::Publisher initial_pose_pub = node.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 100);
 
     // sub
-    ros::Subscriber scan_sub = node.subscribe<std_msgs::Int32>("/target",1,target_Callback);
+    ros::Subscriber scan_sub = node.subscribe<std_msgs::Int32>("/goal_idx",1,target_Callback);
 
     // server
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac("move_base",true);
@@ -51,7 +58,6 @@ int main(int argc, char** argv)
     // 主循环
     ros::Rate loop_rate(5);
     while (ros::ok()){
-
         ros::spinOnce();
 
         ros::param::get("initial_pose_x", initial_pose_x);
@@ -64,15 +70,18 @@ int main(int argc, char** argv)
                 ros::param::get("target_pose_x1", target_pose_x);
                 ros::param::get("target_pose_y1", target_pose_y);
                 ros::param::get("target_pose_th1", target_pose_th);
+                call_movebase = true;
                 break;
             case 2:
                 ROS_INFO_STREAM("get switch_tar = 2!");
                 ros::param::get("target_pose_x2", target_pose_x);
                 ros::param::get("target_pose_y2", target_pose_y);
                 ros::param::get("target_pose_th2", target_pose_th);
+                call_movebase = true;
                 break;
             default:
                 ROS_INFO_STREAM("can not get switch_tar!");
+                call_movebase = false;
         }
         //todo 可以给出多个参数，然后订阅一下节点，依靠订阅消息来装入不同的参数吧
 
@@ -105,11 +114,11 @@ int main(int argc, char** argv)
 
         //move  to target position
         // 先连接一个move base是否可用
-        ROS_INFO("move_base_square.cpp start...");
+        ROS_INFO("check move_base service ...");
         //Wait 10 seconds for the action server to become available
-        if(!ac.waitForServer(ros::Duration(10)))
+        if(!ac.waitForServer(ros::Duration(1)))
         {
-            ROS_INFO("Can't connected to move base server");
+            ROS_INFO("Can't connected to move base server!");
 //            return 1;
         }
 
@@ -118,7 +127,7 @@ int main(int argc, char** argv)
         move_base_msgs::MoveBaseGoal goal;
 
         //Use the map frame to define goal poses
-        goal.target_pose.header.frame_id = "/map";
+        goal.target_pose.header.frame_id = "map";
 
         //Set the time stamp to "now"
         goal.target_pose.header.stamp = ros::Time::now();
@@ -129,29 +138,36 @@ int main(int argc, char** argv)
         //Start the robot moving toward the goal
         //Send the goal pose to the MoveBaseAction server
         // 这里应该是在请求服务了
-        ac.sendGoal(goal);
+
+        ROS_INFO_STREAM(call_movebase<<' '<<goal_changed);
+        if(call_movebase == true  && goal_changed == true){
+            ac.sendGoal(goal);
+            ROS_INFO_STREAM("sended goal!");
+            goal_changed = false;
+        } else
+            ROS_INFO_STREAM("wait for switch_tar change");
 
         //Allow 30s minute to get there
-        bool finished_within_time = ac.waitForResult(ros::Duration(30));
-
-        //If we dont get there in time, abort the goal
-        if(!finished_within_time)
-        {
-            ac.cancelGoal();
-            ROS_INFO("Timed out achieving goal");
-        }
-        else
-        {
-            //We made it!
-            if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-            {
-                ROS_INFO("Goal succeeded!");
-            }
-            else
-            {
-                ROS_INFO("The base failed for some reason");
-            }
-        }
+//        bool finished_within_time = ac.waitForResult(ros::Duration(1));
+//
+//        //If we dont get there in time, abort the goal
+//        if(!finished_within_time)
+//        {
+//            ac.cancelGoal();
+//            ROS_INFO("still getting to goal");
+//        }
+//        else
+//        {
+//            //We made it!
+//            if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+//            {
+//                ROS_INFO("Goal succeeded!");
+//            }
+//            else
+//            {
+//                ROS_INFO("The base failed for some reason");
+//            }
+//        }
 
         first_loop = 0;
         loop_rate.sleep();
