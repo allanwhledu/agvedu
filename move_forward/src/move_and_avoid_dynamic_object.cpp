@@ -60,13 +60,19 @@ int main(int argc, char** argv)
 
         switch (switch_tar){
             case 1:
+                ROS_INFO_STREAM("get switch_tar = 1!");
                 ros::param::get("target_pose_x1", target_pose_x);
                 ros::param::get("target_pose_y1", target_pose_y);
                 ros::param::get("target_pose_th1", target_pose_th);
+                break;
             case 2:
+                ROS_INFO_STREAM("get switch_tar = 2!");
                 ros::param::get("target_pose_x2", target_pose_x);
                 ros::param::get("target_pose_y2", target_pose_y);
                 ros::param::get("target_pose_th2", target_pose_th);
+                break;
+            default:
+                ROS_INFO_STREAM("can not get switch_tar!");
         }
         //todo 可以给出多个参数，然后订阅一下节点，依靠订阅消息来装入不同的参数吧
 
@@ -100,11 +106,11 @@ int main(int argc, char** argv)
         //move  to target position
         // 先连接一个move base是否可用
         ROS_INFO("move_base_square.cpp start...");
-        //Wait 60 seconds for the action server to become available
-        if(!ac.waitForServer(ros::Duration(60)))
+        //Wait 10 seconds for the action server to become available
+        if(!ac.waitForServer(ros::Duration(10)))
         {
             ROS_INFO("Can't connected to move base server");
-            return 1;
+//            return 1;
         }
 
         //Intialize the waypoint goal
@@ -125,8 +131,8 @@ int main(int argc, char** argv)
         // 这里应该是在请求服务了
         ac.sendGoal(goal);
 
-        //Allow 1 minute to get there
-        bool finished_within_time = ac.waitForResult(ros::Duration(180));
+        //Allow 30s minute to get there
+        bool finished_within_time = ac.waitForResult(ros::Duration(30));
 
         //If we dont get there in time, abort the goal
         if(!finished_within_time)
